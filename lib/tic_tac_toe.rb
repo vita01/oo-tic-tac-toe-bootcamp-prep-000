@@ -4,7 +4,16 @@ class TicTacToe
     @board = board || Array.new(9, " ")
   end
 
-  WIN_COMBINATIONS =[
+  def board
+    @board
+  end
+
+  def board=(new_board)
+    @board = new_board
+  end
+
+  # Define your WIN_COMBINATIONS constant
+  WIN_COMBINATIONS  = [
     [0,1,2],
     [3,4,5],
     [6,7,8],
@@ -14,7 +23,7 @@ class TicTacToe
     [0,4,8],
     [2,4,6]
   ]
-
+  #method that prints the current board representation based on the board argument passed to the method.
   def display_board
     puts " #{@board[0]} | #{@board[1]} | #{@board[2]} "
     puts "-----------"
@@ -23,103 +32,82 @@ class TicTacToe
     puts " #{@board[6]} | #{@board[7]} | #{@board[8]} "
   end
 
-  def input_to_index(input)
-     s = input.to_i
-     s - 1
+#oo move
+  def move(position, character="X")
+    @board[position.to_i-1] = character
   end
 
-  def move(index, char="X")
-    @board[index] = char
-    turn_count
-    display_board
+  def input_to_index(user_input)
+    user_input.to_i
   end
 
   def position_taken?(index)
     !(@board[index].nil? || @board[index] == " ")
   end
 
-  def valid_move?(index)
-    index.between?(0,8) && !position_taken?(index)
-  end
-
-  def turn_count
-    count = 0
-    @board.each do |move|
-      if move == "X" || move == "O"
-        count += 1
-      end
-    end
-    count
+  def valid_move?(position)
+    (position.to_i-1).between?(0, 8) &&
+    !position_taken?(position.to_i-1)
   end
 
   def turn
-    puts "Please enter 1-9:"
-    i = gets.strip
-    index = input_to_index(i)
-    m = valid_move?(index)
-    if m == true
-      move(index, current_player)
-    else m == false
-      until m == true
-        puts "Sorry, that was an invalid move. Please enter 1-9:"
-        display_board
-        i = gets.strip
-        index = input_to_index(i)
-        m = valid_move?(index)
-        move(index, current_player)
-      end
+    puts "Please enter a location 1-9: 1 is the top left position, 9 is the bottom right."
+    user_input = gets.strip
+    until valid_move?(user_input) == true
+      puts "dumbass...learn how to count! Use an empty location 1 through 9"
+      puts "Please enter 1-9:"
+      user_input = gets.strip
     end
+    move(user_input, current_player)
+    display_board
   end
 
+#OO turn count
   def turn_count
-    count = 0
-    @board.each do |move|
-      if move == "X" || move == "O"
-        count += 1
-      end
-    end
-    count
+    @board.count {|player| player == "X" || player == "O"}
   end
 
+#oo current_player
   def current_player
-    turn_count.even? ? "X" : "O"
+    turn_count % 2 == 0 ? "X" : "O"
   end
 
   def won?
-    WIN_COMBINATIONS.find do |win_combo|
-      @board[win_combo[0]] == @board[win_combo[1]] && @board[win_combo[0]] == @board[win_combo[2]] && position_taken?(win_combo[1])
+    WIN_COMBINATIONS.detect do |win_index|
+      @board[win_index[0]] == @board[win_index[1]] &&
+      @board[win_index[1]] == @board[win_index[2]] &&
+      position_taken?(win_index[0])
     end
   end
 
   def full?
-    @board.none? do |i|
-      i == " " || i.nil?
+    @board.all? do |position|
+      position == "X" || position =="O"
     end
   end
 
   def draw?
-    won? == nil && full? == true
+    !won? && @board.all? {|position| position == "X" || position == "O"}
   end
 
   def over?
-    draw? == true || won? != nil
+    won? || draw?
   end
 
   def winner
-    if won? != nil
-      winner = @board[won?[0]]
+    if win_index = won?
+    @board[win_index.first]
     end
   end
 
   def play
-    until over? == true
+    until over?
       turn
     end
-    if draw? == true
-         puts "Cat's Game!"
-    else won?
-       puts "Congratulations #{winner}!"
-     end
+    if won?
+      puts "Congratulations #{winner}!"
+    elsif draw?
+      puts "Cat's Game!"
+    end
   end
-
 end
