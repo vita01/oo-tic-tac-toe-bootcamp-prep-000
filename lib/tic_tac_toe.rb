@@ -1,19 +1,10 @@
 class TicTacToe
-
-  def initialize(board = nil)
-    @board = board || Array.new(9, " ")
+  def initialize(board = [" ", " ", " ", " ", " ", " ", " ", " ", " "])
+    @board = board
   end
 
-  def board
-    @board
-  end
 
-  def board=(new_board)
-    @board = new_board
-  end
-
-  # Define your WIN_COMBINATIONS constant
-  WIN_COMBINATIONS  = [
+  WIN_COMBINATIONS = [
     [0,1,2],
     [3,4,5],
     [6,7,8],
@@ -21,9 +12,9 @@ class TicTacToe
     [1,4,7],
     [2,5,8],
     [0,4,8],
-    [2,4,6]
+    [6,4,2]
   ]
-  #method that prints the current board representation based on the board argument passed to the method.
+
   def display_board
     puts " #{@board[0]} | #{@board[1]} | #{@board[2]} "
     puts "-----------"
@@ -32,62 +23,56 @@ class TicTacToe
     puts " #{@board[6]} | #{@board[7]} | #{@board[8]} "
   end
 
-#oo move
-  def move(position, character="X")
-    @board[position.to_i] = character
+  def input_to_index(user_input)
+    user_input.to_i - 1
   end
 
-  def input_to_index(user_input)
-    user_input.to_i-1
+  def move(index, player)
+    @board[index] = player
   end
 
   def position_taken?(index)
-    !(@board[index].nil? || @board[index] == " ")
+    @board[index]== "X" || @board[index] == "O"
   end
 
-  def valid_move?(position)
-    (position.to_i).between?(0, 8) &&
-    !position_taken?(position.to_i)
+  def valid_move?(index)
+    index.between?(0,8) && !position_taken?(index)
   end
 
-  def turn
-    puts "Please enter a location 1-9: 1 is the top left position, 9 is the bottom right."
-    user_input = gets.strip
-    until valid_move?(user_input) == true
-      puts "dumbass...learn how to count! Use an empty location 1 through 9"
-      puts "Please enter 1-9:"
-      user_input = gets.strip
-    end
-    move(user_input, current_player)
-    display_board
-  end
-
-#OO turn count
   def turn_count
-    @board.count {|player| player == "X" || player == "O"}
+    @board.count{|token| token == "X" || token == "O"}
   end
 
-#oo current_player
   def current_player
     turn_count % 2 == 0 ? "X" : "O"
   end
 
+  def turn
+    puts "Please enter 1-9:"
+    user_input = gets.strip
+    index = input_to_index(user_input)
+    if valid_move?(index)
+      move(index, current_player)
+      display_board
+    else
+      turn
+    end
+  end
+
   def won?
-    WIN_COMBINATIONS.detect do |win_index|
-      @board[win_index[0]] == @board[win_index[1]] &&
-      @board[win_index[1]] == @board[win_index[2]] &&
-      position_taken?(win_index[0])
+    WIN_COMBINATIONS.detect do |combo|
+      @board[combo[0]] == @board[combo[1]] &&
+      @board[combo[1]] == @board[combo[2]] &&
+      position_taken?(combo[0])
     end
   end
 
   def full?
-    @board.all? do |position|
-      position == "X" || position =="O"
-    end
+    @board.all?{|token| token == "X" || token == "O"}
   end
 
   def draw?
-    !won? && @board.all? {|position| position == "X" || position == "O"}
+    !won? && full?
   end
 
   def over?
@@ -95,13 +80,14 @@ class TicTacToe
   end
 
   def winner
-    if win_index = won?
-    @board[win_index.first]
+    if winning_combo = won?
+      @board[winning_combo.first]
     end
   end
 
+
   def play
-    until over?
+    while !over?
       turn
     end
     if won?
