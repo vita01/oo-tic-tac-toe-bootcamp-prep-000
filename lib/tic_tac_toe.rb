@@ -34,7 +34,7 @@ class TicTacToe
 
 #oo move
   def move(position, character="X")
-    @board[position.to_i-1] = character
+    @board[position.to_i] = character
   end
 
   def input_to_index(user_input)
@@ -46,8 +46,8 @@ class TicTacToe
   end
 
   def valid_move?(position)
-    (position.to_i-1).between?(0, 8) &&
-    !position_taken?(position.to_i-1)
+    (position.to_i).between?(0, 8) &&
+    !position_taken?(position.to_i)
   end
 
   def turn
